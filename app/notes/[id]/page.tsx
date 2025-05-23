@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import ReactMde from "react-mde";
 import ReactMarkDown from "react-markdown";
 import debounce from "lodash/debounce";
+import { syncNotes } from "@/lib/syncService";
 
 const page = () => {
 	const [note, setNote] = useState<Note | null>(null);
@@ -55,6 +56,10 @@ const page = () => {
 				if (updatedNote) {
 					setData(data);
 				}
+
+                if(isOnline) {
+                    syncNotes();
+                }
 			} catch (error) {
 				console.log(error, "failed");
 			}
