@@ -30,7 +30,7 @@ export default function Home() {
 			}
 		};
 		loadNotes();
-	}, []); // Empty dependency array - only run once
+	}, []);
 
 	// Create a separate function to refresh notes
 	const refreshNotes = async () => {
