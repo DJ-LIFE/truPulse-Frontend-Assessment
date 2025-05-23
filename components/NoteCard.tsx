@@ -1,9 +1,26 @@
 import { Note } from "@/lib/db";
-const NoteCard = ({ title, content, updatedAt, synced }: Note) => {
-	return <div className="flex flex-col items-center gap-4 border-neutral-200 rounded-md">
-        <h5>{title}</h5>
-        <p>{content}</p>
-    </div>;
+import Link from "next/link";
+const NoteCard = ({ id, title, content, updatedAt, synced }: Note) => {
+	const truncatedContent =
+		content.length > 100 ? content.substring(0, 100) + "..." : content;
+	return (
+		<Link href={`/notes/${id}`}>
+			<div className="flex flex-col items-center gap-4 border-neutral-200 rounded-md">
+				<h5>{title}</h5>
+				<div
+					className={`text-xs px-2 py-1 rounded ${
+						synced
+							? "bg-green-100 text-green-500"
+							: "bg-yellow-100 text-yellow-500"
+					}`}
+                    key={id}
+				>
+					{synced ? "Synced" : "Unsynced"}
+				</div>
+				<p>{truncatedContent}</p>
+			</div>
+		</Link>
+	);
 };
 
 export default NoteCard;
