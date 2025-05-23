@@ -36,7 +36,7 @@ export const addNote = async (note: Omit<Note, "id">) => {
 
 export const updateNote = async (
 	id: string,
-	changes: Partial<Omit<NonElementParentNode, "id">>
+	changes: Partial<Omit<Note, "id">>
 ) => {
 	await db.notes.update(id, {
 		...changes,

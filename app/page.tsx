@@ -1,13 +1,17 @@
 "use client";
+import { Button } from "@/components/Button";
 import NoteCard from "@/components/NoteCard";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
-import { getAllNotes, Note } from "@/lib/db";
+import { deleteNote, getAllNotes, Note } from "@/lib/db";
 import { Plus } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Home() {
 	const [notes, setNotes] = useState<Note[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const router = useRouter();
 	useEffect(() => {
 		const loadNotes = async () => {
 			try {
@@ -19,8 +23,7 @@ export default function Home() {
 			}
 		};
 		loadNotes();
-	}, []);
-
+	}, [notes]);
 
 	return (
 		<div className="flex justify-center items-center">
@@ -29,20 +32,35 @@ export default function Home() {
 			) : notes.length > 0 ? (
 				<div>
 					{notes.map((note) => (
-						<NoteCard key={note.id} {...note} />
+						<div className="flex justify-center border border-neutral-300 p-4 mt-10 shadow-lg rounded-md">
+							<NoteCard key={note.id} {...note} />{" "}
+							<span
+								className="text-red-500 text-xs font-semibold cursor-pointer"
+								onClick={() => {
+									deleteNote(note.id);
+								}}
+							>
+								X
+							</span>
+						</div>
 					))}
 				</div>
 			) : (
-				<button
-					type="button"
-					className="cursor-pointer focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900"
-				>
-					Create Note{" "}
-					<span>
-						<Plus />
-					</span>
-				</button>
+				<Link href={`/notes/new`}>
+					<Button>
+						Create Note{" "}
+						<span>
+							<Plus />
+						</span>
+					</Button>
+				</Link>
 			)}
+			<Button onClick={() => router.push("/notes/new")}>
+				Create Note Note{" "}
+				<span>
+					<Plus />
+				</span>
+			</Button>
 		</div>
 	);
 }
