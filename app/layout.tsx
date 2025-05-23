@@ -33,6 +33,13 @@ export default function RootLayout({
 	useEffect(() => {
 		if (isOnline) {
 			syncNotes();
+
+			// Also set up periodic syncing while online
+			const intervalId = setInterval(() => {
+				syncNotes();
+			}, 30000); // Sync every 30 seconds when online
+
+			return () => clearInterval(intervalId);
 		}
 	}, [isOnline]);
 

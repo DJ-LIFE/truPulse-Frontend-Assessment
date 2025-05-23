@@ -57,9 +57,9 @@ const page = () => {
 					setData(data);
 				}
 
-                if(isOnline) {
-                    syncNotes();
-                }
+				if (isOnline) {
+					syncNotes();
+				}
 			} catch (error) {
 				console.log(error, "failed");
 			}
@@ -107,7 +107,9 @@ const page = () => {
 				</div>
 			</div>
 			<div className="mb-4">
-				<label className="block mb-2">Title</label>
+				<label className="block mb-2 text-sm font-medium text-gray-900">
+					Title
+				</label>
 				<input
 					type="text"
 					placeholder="Enter Title..."
@@ -116,10 +118,12 @@ const page = () => {
 						setData({ ...data, title: e.target.value });
 						handleDebounceSave(id, { title: e.target.value });
 					}}
+					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500
+					 focus:border-blue-500 block w-full p-2.5"
 				/>
 			</div>
 			<div className="mb-6">
-				<label className="block mb-2">Content</label>
+				<label className="block mb-2 text-sm font-medium text-gray-900">Content</label>
 				<div className="border border-neutral-400 p-4 rounded-md shadow-md flex justify-between items-center gap-4">
 					<ReactMde
 						value={data.content}
@@ -134,6 +138,14 @@ const page = () => {
 								<ReactMarkDown>{markdown}</ReactMarkDown>
 							)
 						}
+						classes={{
+							reactMde: "border-none w-full",
+							toolbar: "bg-gray-50 border-b border-gray-200 h-10 p-2 rounded-md",
+							textArea:
+								"w-full bg-white rounded-md shadow-md mt-2 min-h-[200px] p-3 focus:ring-2 focus:ring-blue-500 outline-none",
+							preview: "p-3 min-h-[200px] bg-white overflow-auto",
+							
+						}}
 					/>
 				</div>
 			</div>

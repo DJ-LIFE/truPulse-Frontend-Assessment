@@ -5,21 +5,23 @@ const NoteCard = ({ id, title, content, updatedAt, synced }: Note) => {
 		content.length > 50 ? content.substring(0, 50) + "..." : content;
 	return (
 		<Link href={`/notes/${id}`}>
-			<div className="flex flex-col items-center gap-4 border-neutral-200 rounded-md pb-20 w-full">
+			<div className="flex flex-col gap-4 border-neutral-200 pb-10 p-8 w-full min-w-70">
 				<div className="w-full flex justify-between items-center">
-					<h5 className="text-lg font-bold text-neutral-800">{title.toUpperCase()}</h5>
+					<h5 className="text-2xl font-bold text-neutral-800">
+						{title.toUpperCase()}
+					</h5>
 					<div
-						className={`text-xs px-2 py-1 rounded ${
-							synced
+						className={`text-xs font-semibold px-2 py-1 rounded-full border border-green-500 shadow-md ${
+							synced === 1
 								? "bg-green-100 text-green-500"
 								: "bg-yellow-100 text-yellow-500"
 						}`}
 						key={id}
 					>
-						{synced ? "Synced" : "Unsynced"}
+						{synced === 1 ? "Synced" : "Unsynced"}
 					</div>
 				</div>
-				<p className="text-wrap">{truncatedContent}</p>
+				<p className="text-wrap text-left text-lg font-medium text-neutral-700">{truncatedContent}</p>
 			</div>
 		</Link>
 	);

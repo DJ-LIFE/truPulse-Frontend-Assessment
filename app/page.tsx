@@ -5,10 +5,10 @@ import SearchQuery from "@/components/SearchQuery";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { deleteNote, getAllNotes, Note } from "@/lib/db";
 import { initialSync, syncNotes } from "@/lib/syncService";
-import { Plus } from "lucide-react";
+import { CircleX, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { InputEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
 	const [notes, setNotes] = useState<Note[]>([]);
@@ -57,11 +57,19 @@ export default function Home() {
 		});
 	}, []);
 
-	const filteredNotes = notes.filter(
+	// First filter by UUID pattern, then by search query
+	const uuidPattern =
+		/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+	const uuidNotes = notes.filter((note) =>
+		uuidPattern.test(note.id.toString())
+	);
+
+	const filteredNotes = uuidNotes.filter(
 		(note) =>
 			note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
 			note.content.toLowerCase().includes(searchQuery.toLowerCase())
 	);
+	console.log(filteredNotes, "filtered notes");
 	return (
 		<div className="flex flex-col justify-center items-center">
 			<div className="p-10">
@@ -75,44 +83,37 @@ export default function Home() {
 			{isLoading ? (
 				<div className="h-screen mt-40">Loading...</div>
 			) : filteredNotes.length > 0 ? (
-				<div className="grid grid-cols-3 gap-4">
+				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 					{filteredNotes.map((note) => (
 						<div
-							className="flex justify-center border border-neutral-300 p-4 w-full mt-10 shadow-lg rounded-md"
+							className="relative flex justify-center bg-gradient-to-br from-pink-100 via-yello-100 m-2 to-violet-100 border border-neutral-300 w-full mt-10 shadow-lg rounded-2xl hover:scale-105 hover:transition-all hover:duration-300"
 							key={note.id}
 						>
-							<NoteCard {...note} />{" "}
+							<NoteCard key={note.id} {...note} />
 							<span
-								className="text-red-500 text-xs font-semibold cursor-pointer"
+								className="absolute text-red-500 text-xs font-semibold cursor-pointer right-2 top-2 "
 								onClick={async () => {
 									await deleteNote(note.id);
 									refreshNotes(); // Refresh notes after deletion
 								}}
 							>
-								X
+								<CircleX />
 							</span>
 						</div>
 					))}
 				</div>
 			) : (
 				<Link href={`/notes/new`}>
-					<Button>
-						Create Note{" "}
-						<span>
-							<Plus />
-						</span>
+					<Button className="flex">
+						Create Note
 					</Button>
 				</Link>
 			)}
 			{filteredNotes.length > 0 && (
 				<Button
 					onClick={() => router.push("/notes/new")}
-					className="fixed bottom-10 right-20"
 				>
 					Create Note Note{" "}
-					<span>
-						<Plus />
-					</span>
 				</Button>
 			)}
 		</div>

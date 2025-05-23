@@ -5,7 +5,7 @@ interface Note {
 	title: string;
 	content: string;
 	updatedAt: string;
-	synced: boolean;
+	synced: number; // Use 0 for false, 1 for true to make it indexable
 }
 
 const db = new Dexie("notesdb") as Dexie & {
@@ -30,7 +30,7 @@ export const addNote = async (note: Omit<Note, "id">) => {
 		id,
 		...note,
 		updatedAt: new Date().toISOString(),
-		synced: false,
+		synced: 0,
 	});
 };
 
@@ -38,10 +38,14 @@ export const updateNote = async (
 	id: string,
 	changes: Partial<Omit<Note, "id">>
 ) => {
+	// Only mark as unsynced if content or title changes
+	const needsSync =
+		changes.title !== undefined || changes.content !== undefined;
+
 	await db.notes.update(id, {
 		...changes,
 		updatedAt: new Date().toISOString(),
-		synced: false,
+		...(needsSync ? { synced: 0 } : {}), // Only update synced status if needed
 	});
 	return await getNote(id);
 };
@@ -56,7 +60,11 @@ export const getUnsyncedNotes = async () => {
 };
 
 export const markNoteSynced = async (id: string) => {
-	return await db.notes.update(id, { synced: true });
+	return await db.notes.update(id, { synced: 1 });
+};
+
+export const isSynced = (note: Note): boolean => {
+	return note.synced === 1;
 };
 
 export type { Note };

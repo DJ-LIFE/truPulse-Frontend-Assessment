@@ -4,8 +4,6 @@ import { db, getAllNotes, getUnsyncedNotes, markNoteSynced } from "./db";
 // Helper function to check real connectivity by making a test request
 const checkRealConnectivity = async (): Promise<boolean> => {
 	try {
-		// Try a lightweight request to check connectivity
-		// We use a HEAD request to minimize data transfer
 		const response = await fetch("/favicon.ico", {
 			method: "HEAD",
 			cache: "no-store",
@@ -19,27 +17,57 @@ const checkRealConnectivity = async (): Promise<boolean> => {
 };
 
 export const syncNotes = async () => {
-	// First check navigator.onLine
 	if (!navigator.onLine) return { success: false, message: "Offline" };
 
-	// Double-check with a real network request
 	const isReallyOnline = await checkRealConnectivity();
 	if (!isReallyOnline)
 		return { success: false, message: "No connectivity detected" };
-
 	try {
 		const unsyncedNotes = await getUnsyncedNotes();
+		console.log(`Found ${unsyncedNotes.length} unsynced notes to sync`);
+
+		let syncedCount = 0;
+		let errorCount = 0;
+
+		// First, fetch all notes from the server to check what exists
+		const serverNotes = await api.fetchNotes();
+		const serverNoteIds = new Set(serverNotes.map((note) => note.id));
 
 		for (const note of unsyncedNotes) {
 			try {
-				await api.updateNoteOnServer(note);
+				console.log(`Syncing note: ${note.id} - ${note.title}`);
+
+				// If the note exists on the server, update it
+				if (serverNoteIds.has(note.id)) {
+					await api.updateNoteOnServer(note);
+				} else {
+					// If the note doesn't exist on the server, create it
+					await api.createNote({
+						id: note.id,
+						title: note.title,
+						content: note.content,
+						updatedAt: note.updatedAt,
+					});
+				}
+
 				await markNoteSynced(note.id);
+				syncedCount++;
 			} catch (error) {
-				console.error(`Failed to sync Note ${note.id}`, error);
+				console.error(`Failed to sync Note ${note.id}:`, error);
+				errorCount++;
+				// Don't mark as synced if there was an error
 			}
 		}
 
-		return { success: true, syncedCount: unsyncedNotes.length };
+		return {
+			success: true,
+			syncedCount,
+			errorCount,
+			message:
+				syncedCount > 0
+					? `Synced ${syncedCount} notes`
+					: "No notes needed syncing",
+		};
 	} catch (error) {
 		console.log("Sync failed", error);
 		return { success: false, message: "Sync Error" };
@@ -47,10 +75,8 @@ export const syncNotes = async () => {
 };
 
 export const initialSync = async () => {
-	// First check navigator.onLine
 	if (!navigator.onLine) return;
 
-	// Double-check with a real network request
 	const isReallyOnline = await checkRealConnectivity();
 	if (!isReallyOnline) return;
 
@@ -68,7 +94,7 @@ export const initialSync = async () => {
 			if (!localNote) {
 				await db.notes.add({
 					...serverNote,
-					synced: true,
+					synced: 1,
 				});
 			} else {
 				if (
@@ -78,7 +104,7 @@ export const initialSync = async () => {
 				) {
 					await db.notes.update(localNote.id, {
 						...serverNote,
-						synced: true,
+						synced: 1,
 					});
 				}
 			}
